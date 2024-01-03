@@ -3,6 +3,7 @@ package org.example.database;
 import com.gitlab.mvysny.jdbiorm.JdbiOrm;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
+import org.example.utils.PropertyManager;
 import org.flywaydb.core.Flyway;
 import org.intellij.lang.annotations.Language;
 import org.jetbrains.annotations.NotNull;
@@ -21,6 +22,22 @@ public class DatabaseUtil {
         jdbi().withHandle(handle -> handle
                 .createUpdate(sql)
                 .execute());
+    }
+
+    /**
+     * This method will read the database details from properties file and will connect
+     * to database
+     */
+    public static void configureJdbiOrm() {
+
+        PropertyManager PM = PropertyManager.getInstance();
+        final HikariConfig hikariConfig = new HikariConfig();
+        hikariConfig.setJdbcUrl(PM.getProperty("JDBC_URL"));
+        hikariConfig.setUsername(PM.getProperty("JDBC_USERNAME"));
+        hikariConfig.setPassword(PM.getProperty("JDBC_PASSWORD"));
+        hikariConfig.setDriverClassName(PM.getProperty("JDBC_DRIVER_CLASS_NAME"));
+        hikariConfig.setMinimumIdle(0);
+        JdbiOrm.setDataSource(new HikariDataSource(hikariConfig));
     }
 
     public static void configureJdbiOrm(@NotNull String jdbcUrl, @NotNull String username, @NotNull String password, @NotNull String driver) {

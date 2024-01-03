@@ -1,0 +1,4 @@
+ALTER TABLE USERS
+DROP COLUMN password;
+
+ALTER TABLE USERS ADD UNIQUE (username, email);

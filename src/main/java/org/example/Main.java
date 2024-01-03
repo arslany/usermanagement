@@ -4,16 +4,21 @@ import com.gitlab.mvysny.jdbiorm.JdbiOrm;
 import io.javalin.Javalin;
 import io.javalin.event.EventListener;
 import org.example.database.DatabaseUtil;
-import org.example.database.controller.UserController;
+import org.example.controller.UserController;
+import org.example.exception.CustomException;
+import org.example.exception.CustomExceptionHandler;
+import org.example.utils.PropertyManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static io.javalin.apibuilder.ApiBuilder.crud;
 import static io.javalin.apibuilder.ApiBuilder.get;
+import static java.util.Calendar.PM;
 
 public class Main {
 
     private static final Logger log = LoggerFactory.getLogger(Main.class);
+    private static final PropertyManager PM = PropertyManager.getInstance();
 
     public static void main(String[] args) {
         log.info("Starting application");
@@ -27,15 +32,20 @@ public class Main {
 
         app.routes(() -> {
             //Use crud methods for hello and user resources
-            crud("/hello/{hello-id}", new HelloWorldController());
-            crud("/user/{user-id}", new UserController());
+            UserController userController = new  UserController();
+            crud("/hello/{hello-id}", userController);
+            get("/user/email/{email}", ctx -> {
+                userController.findUserByEmail(ctx, ctx.pathParam("email"));
+            });
+            crud("/user/{user-id}", userController);
             //Use get method for the root path
             get("/", ctx -> { ctx.result("up and running");
             });
         });
 
+        app.exception(CustomException.class, new CustomExceptionHandler());
         //Start the app on the specified port
-        app.start(7000);
+        app.start(PM.getPropertyAsInt("REST_PORT"));
         Runtime.getRuntime().addShutdownHook(new Thread(app::stop));
         app.events(Main::accept);
         connectToDatabase();
@@ -72,12 +82,7 @@ public class Main {
      */
     private static void connectToDatabase() {
         log.info("Connecting to database");
-        String jdbcUrl = "jdbc:h2:file:~/Desktop/userDatabase;DB_CLOSE_DELAY=-1";
-        String jdbcUsername = "sa";
-        String jdbcPassword = "";
-        String driver = "org.h2.Driver";
-        //Connect to database
-        DatabaseUtil.configureJdbiOrm(jdbcUrl, jdbcUsername, jdbcPassword, driver);
+        DatabaseUtil.configureJdbiOrm();
 
         //run updated script
         DatabaseUtil.updateDatabase();

@@ -24,11 +24,6 @@ public class User implements Entity<Long> {
     private String userName;
 
     @NotNull
-    @JsonIgnore
-    @Size(min = 8, max = 12)
-    private String password;
-
-    @NotNull
     @ColumnName("created_at")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "UTC")
     private Instant created;
@@ -47,6 +42,10 @@ public class User implements Entity<Long> {
     @ColumnName("email")
     private String emailAddress;
 
+    public User(){
+
+    }
+
     @Override
     public Long getId() {
         return id;
@@ -63,15 +62,6 @@ public class User implements Entity<Long> {
 
     public void setUserName(String userName) {
         this.userName = userName;
-    }
-
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
     }
 
     public Instant getCreated() {
@@ -126,7 +116,6 @@ public class User implements Entity<Long> {
     public String toString() {
         return "User{" +
                 "username='" + userName + '\'' +
-                ", password='" + password + '\'' +
                 ", created=" + created +
                 ", firstname='" + firstname + '\'' +
                 ", surname='" + surname + '\'' +
